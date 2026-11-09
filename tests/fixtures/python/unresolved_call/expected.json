@@ -1,0 +1,8 @@
+{"stories": [
+  {"entry": "app:main",
+   "pages": [{"chunk": "app:main", "depth": 0}, {"chunk": "app:setup", "depth": 1}],
+   "references": [{"call": "app:main#call2", "note": "unresolved", "target_page": null},
+                  {"call": "app:setup#call1", "note": "external", "target_page": null}],
+   "not_on_path": [], "never_reached": [],
+   "diagnostics": [{"code": "unresolved_call", "file": "app.py", "line": 3}]}
+]}

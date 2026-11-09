@@ -1,0 +1,10 @@
+{"stories": [
+  {"entry": "backup:<module>",
+   "pages": [{"chunk": "backup:<module>", "depth": 0}, {"chunk": "backup:run", "depth": 1}],
+   "references": [{"call": "backup:run#call1", "note": "external", "target_page": null}],
+   "not_on_path": [], "never_reached": ["restore:run"], "diagnostics": []},
+  {"entry": "restore:<module>",
+   "pages": [{"chunk": "restore:<module>", "depth": 0}, {"chunk": "restore:run", "depth": 1}],
+   "references": [{"call": "restore:run#call1", "note": "external", "target_page": null}],
+   "not_on_path": [], "never_reached": ["backup:run"], "diagnostics": []}
+]}

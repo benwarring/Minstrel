@@ -1,0 +1,6 @@
+{"stories": [
+  {"entry": "app:main",
+   "pages": [{"chunk": "app:main", "depth": 0}, {"chunk": "app:helloWorld", "depth": 1}],
+   "references": [{"call": "app:helloWorld#call1", "note": "external", "target_page": null}],
+   "not_on_path": [], "never_reached": [], "diagnostics": []}
+]}

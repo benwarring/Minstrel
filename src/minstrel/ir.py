@@ -149,7 +149,8 @@ class Chunk:
     """A unit that becomes one page: a function, a method, or module top level.
 
     Attributes:
-        id: ``<module>:<qualname>``; module top level is ``<module>:<module>``.
+        id: ``<module>:<qualname>``. Module top level uses the literal
+            qualname ``<module>``, e.g. ``app:<module>``.
         name: Display name.
         file: Path of the source file.
         start_line: First line of the chunk in ``file``.
@@ -178,7 +179,9 @@ class Program:
         language: Source language name, e.g. ``python``.
         files: Paths of the files read.
         chunks: Every chunk, in the order the adapter extracted them.
-        entry_candidates: Chunk ids that could start a story, best first.
+        entry_candidates: Chunk ids that could start a story, grouped into
+            tiers, best tier first, e.g. ``[["app:<module>"], ["app:main"]]``.
+            By default there is one story per id in the first tier.
         diagnostics: Problems found while reading or resolving.
     """
 
@@ -186,7 +189,7 @@ class Program:
     language: str
     files: list[str] = field(default_factory=list)
     chunks: list[Chunk] = field(default_factory=list)
-    entry_candidates: list[str] = field(default_factory=list)
+    entry_candidates: list[list[str]] = field(default_factory=list)
     diagnostics: list[Diagnostic] = field(default_factory=list)
 
 
@@ -343,23 +346,30 @@ def program_from_json(text: str) -> Program:
 
     Raises:
         ValueError: if ``text`` is not JSON, its ``schema_version`` is not
-            ``SCHEMA_VERSION``, or it doesn't have the IR's shape.
+            ``SCHEMA_VERSION``, it is nested too deeply to decode, or it
+            doesn't have the IR's shape.
     """
-    data = json.loads(text)
-    if not isinstance(data, dict):
-        raise ValueError("IR document must be a JSON object")
-    version = data.get("schema_version")
-    if version != SCHEMA_VERSION:
-        raise ValueError(
-            f"unsupported IR schema_version {version!r}; "
-            f"this Minstrel reads schema_version {SCHEMA_VERSION}"
-        )
     try:
-        return _program_from_dict(data)
-    except (KeyError, TypeError) as error:
-        # Missing keys, unknown keys and wrong container types all surface as
-        # one ValueError, so callers only need to catch one exception type.
-        raise ValueError(f"malformed IR document: {error!r}") from error
+        data = json.loads(text)
+        if not isinstance(data, dict):
+            raise ValueError("IR document must be a JSON object")
+        version = data.get("schema_version")
+        # Compare the type too: True and 1.0 both == 1 in Python.
+        if type(version) is not int or version != SCHEMA_VERSION:
+            raise ValueError(
+                f"unsupported IR schema_version {version!r}; "
+                f"this Minstrel reads schema_version {SCHEMA_VERSION}"
+            )
+        try:
+            return _program_from_dict(data)
+        except (KeyError, TypeError) as error:
+            # Missing keys, unknown keys and wrong container types all surface
+            # as one ValueError, so callers only need to catch one type.
+            raise ValueError(f"malformed IR document: {error!r}") from error
+    except RecursionError as error:
+        # Python's recursion limit is the nesting cap: the stdlib JSON scanner
+        # and the recursive decoders below both raise RecursionError past it.
+        raise ValueError("IR document nested too deeply") from error
 
 
 def _to_plain(value: Any) -> Any:
@@ -374,6 +384,7 @@ def _to_plain(value: Any) -> Any:
 
 
 def _program_from_dict(data: dict[str, Any]) -> Program:
+    """Rebuild a Program from its decoded JSON dict, chunks included."""
     return Program(
         **{
             **data,
@@ -384,10 +395,12 @@ def _program_from_dict(data: dict[str, Any]) -> Program:
 
 
 def _chunk_from_dict(data: dict[str, Any]) -> Chunk:
+    """Rebuild one Chunk and its body from its decoded JSON dict."""
     return Chunk(**{**data, "body": _block_from_list(data["body"])})
 
 
 def _block_from_list(items: list[dict[str, Any]]) -> Block:
+    """Rebuild a Block from its list of tagged node dicts."""
     return [_node_from_dict(item) for item in items]
 
 
@@ -404,6 +417,7 @@ def _node_from_dict(data: dict[str, Any]) -> Node:
 
 
 def _arm_from_dict(data: dict[str, Any]) -> Arm:
+    """Rebuild one Arm, with its body and partial blocks, from its dict."""
     return Arm(
         **{
             **data,

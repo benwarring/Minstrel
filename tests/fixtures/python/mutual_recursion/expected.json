@@ -1,0 +1,8 @@
+{"stories": [
+  {"entry": "app:main",
+   "pages": [{"chunk": "app:main", "depth": 0}, {"chunk": "app:is_even", "depth": 1},
+             {"chunk": "app:is_odd", "depth": 2}],
+   "references": [{"call": "app:main#call2", "note": "external", "target_page": null},
+                  {"call": "app:is_odd#call1", "note": "recursive", "target_page": 2}],
+   "not_on_path": [], "never_reached": [], "diagnostics": []}
+]}

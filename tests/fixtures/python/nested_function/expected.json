@@ -1,0 +1,7 @@
+{"stories": [
+  {"entry": "app:main",
+   "pages": [{"chunk": "app:main", "depth": 0}, {"chunk": "app:outer", "depth": 1},
+             {"chunk": "app:outer.inner", "depth": 2}],
+   "references": [{"call": "app:outer.inner#call1", "note": "external", "target_page": null}],
+   "not_on_path": [], "never_reached": [], "diagnostics": []}
+]}

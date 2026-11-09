@@ -1,0 +1,7 @@
+{"stories": [
+  {"entry": "app:main",
+   "pages": [{"chunk": "app:main", "depth": 0}, {"chunk": "app:load", "depth": 1},
+             {"chunk": "app:parse", "depth": 2}, {"chunk": "app:validate", "depth": 3}],
+   "references": [],
+   "not_on_path": [], "never_reached": [], "diagnostics": []}
+]}
